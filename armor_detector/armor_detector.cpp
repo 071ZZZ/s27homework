@@ -29,7 +29,7 @@ Point2f getIntersection(Point2f A, Point2f B, Point2f C, Point2f D)
 
 int main()
 {
-     VideoCapture cap("/home/lqy/s27_homework/armors/avi.mp4");
+     VideoCapture cap("/home/lqy/s27_homework/src/armors/avi.mp4");
 
     if (!cap.isOpened())
     {
