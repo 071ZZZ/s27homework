@@ -98,7 +98,73 @@ public:
     }
 };
 
+class Transform {
+public:
+    Quaternion q; 
+    double tx, ty, tz; 
+
+    Transform(double tx = 0, double ty = 0, double tz = 0,
+              const Quaternion& q = Quaternion())
+        : q(q), tx(tx), ty(ty), tz(tz) {}
+
+    Pose apply(const Pose& src) const {
+        std::vector<double> p_src = {src.x, src.y, src.z};
+        std::vector<double> p_rot = q.rotate(p_src);
+        double newX = p_rot[0] + tx;
+        double newY = p_rot[1] + ty;
+        double newZ = p_rot[2] + tz;
+
+        Quaternion q_src = src.attitudeQuat();
+        Quaternion q_tgt = q * q_src;
+
+        Pose res(newX, newY, newZ, 0, 0, 0);
+        res.setFromQuat(q_tgt);
+        return res;
+    }
+
+    Transform operator*(const Transform& other) const {
+        Quaternion q_new = q * other.q;
+        std::vector<double> t_rot = q.rotate({other.tx, other.ty, other.tz});
+        return Transform(tx + t_rot[0], ty + t_rot[1], tz + t_rot[2], q_new);
+    }
+};
+
 int main() {
-  
+    std::map<std::string, Transform> transforms;
+    Transform T_camera_to_gimbal(0.2, 0.0, 0.0);
+    Quaternion q_go = Quaternion::fromEuler(-0.1, -0.1, -0.1);
+    Transform T_gimbal_to_odom(0.0, 0.0, 0.0, q_go);
+    double x, y, z, yaw, pitch, roll;
+    std::cin >> x >> y >> z >> yaw >> pitch >> roll;
+
+    std::string target;
+    std::string word;
+    while (std::cin >> word) {
+        if (!word.empty() && word[0] == '/') {
+            target = word;
+            break;
+        }
+    }
+
+    Transform T_camera_to_target;
+
+    if (target == "/Gimbal") {
+        T_camera_to_target = T_camera_to_gimbal;
+    } else if (target == "/Odom") {
+        // Camera → Odom = (Gimbal → Odom) * (Camera → Gimbal)
+        T_camera_to_target = T_gimbal_to_odom * T_camera_to_gimbal;
+    } else {
+        std::cerr << "未知目标坐标系: " << target << std::endl;
+        return 1;
+    }
+
+    Pose srcPose(x, y, z, yaw, pitch, roll);
+    Pose tgtPose = T_camera_to_target.apply(srcPose);
+
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << tgtPose.x << " " << tgtPose.y << " " << tgtPose.z << " "
+              << tgtPose.yaw << " " << tgtPose.pitch << " " << tgtPose.roll
+              << std::endl;
+
     return 0;
 }
