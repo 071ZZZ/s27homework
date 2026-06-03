@@ -25,12 +25,6 @@ bool PnP::loadCalibration(const std::string& yamlPath) {
     return !cameraMatrix_.empty();
 }
 
-void PnP::setCameraParams(const cv::Mat& cameraMatrix,
-                                     const cv::Mat& distCoeffs) {
-    cameraMatrix_ = cameraMatrix.clone();
-    distCoeffs_   = distCoeffs.clone();
-}
-
 bool PnP::estimate(const std::vector<cv::Point2f>& imageCorners,
                               Target3D& target) {
     if (imageCorners.size() != 4 || cameraMatrix_.empty())

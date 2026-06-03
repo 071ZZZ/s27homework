@@ -17,8 +17,6 @@ public:
     bool initialize(const std::string& videoPath,
                     const std::string& calibPath);
 
-    void setBulletSpeed(double speed) { bulletSpeed_ = speed; }
-
     void run();
 
     bool processFrame(const cv::Mat& frame, GimbalCommand& output);

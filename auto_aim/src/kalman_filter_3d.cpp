@@ -51,7 +51,6 @@ void KalmanFilter3D::buildProcessNoise(double dt, double q) {
     double dt3 = dt2 * dt;
 
     Q_ = cv::Mat::zeros(6, 6, CV_64F);
-    // 离散化连续白噪声加速度模型(DBL): Q_block = q * [dt^3/3, dt^2/2; dt^2/2, dt]
     double q_dt3_3 = q * dt3 / 3.0;
     double q_dt2_2 = q * dt2 / 2.0;
     double q_dt     = q * dt;

@@ -40,19 +40,12 @@ bool AutoAimSystem::processFrame(const cv::Mat& frame, GimbalCommand& output) {
     lastArmors_ = armorDetector_.detect(lastMask_, frame.size());
 
     if (!lastArmors_.empty()) {
-        // 选最靠近画面中心的装甲板
-        cv::Point2f imgCenter(frame.cols * 0.5f, frame.rows * 0.5f);
-        ImageArmor* bestArmor = nullptr;
-        double bestDist = 1e9;
-        for (auto& a : lastArmors_) {
-            double d = cv::norm(a.center - imgCenter);
-            if (d < bestDist) { bestDist = d; bestArmor = &a; }
-        }
-        //PnP解算
-        if (bestArmor) {
-            Target3D target;
-            if (pnp_.estimate(bestArmor->corners, target)) {
-                cv::Point3d pos(target.x, target.y, target.z);
+        // detect() 已按评分选出一个最优装甲板 (评分包含中心距离因素)
+        ImageArmor& bestArmor = lastArmors_[0];
+        // PnP解算
+        Target3D target;
+        if (pnp_.estimate(bestArmor.corners, target)) {
+            cv::Point3d pos(target.x, target.y, target.z);
                 lastMeasured_ = pos;
                 double ts = getTimestamp();
 
@@ -88,7 +81,6 @@ bool AutoAimSystem::processFrame(const cv::Mat& frame, GimbalCommand& output) {
                 lastCmd_ = output;
                 return true;
             }
-        }
     }
 
     // 未检测到装甲板 — 只预测不更新

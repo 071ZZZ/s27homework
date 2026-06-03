@@ -8,8 +8,6 @@ public:
     PnP();
 
     bool loadCalibration(const std::string& yamlPath);
-    void setCameraParams(const cv::Mat& cameraMatrix, const cv::Mat& distCoeffs);
-
     bool estimate(const std::vector<cv::Point2f>& imageCorners, Target3D& target);
 
     static std::vector<cv::Point3f> getArmorModelPoints();
